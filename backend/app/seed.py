@@ -1,6 +1,8 @@
 import json
 from app.db import connect
 from app.engines.estimate import estimate_room
+from app.repositories import settings as settings_repo
+
 
 def init_db():
     conn = connect()
@@ -18,10 +20,23 @@ def init_db():
         conn.execute("INSERT INTO openings(room_id,kind,w,h) VALUES (2,'door',0.9,2.1)")
         conn.execute("INSERT INTO openings(room_id,kind,w,h) VALUES (2,'window',1.8,1.5)")
         conn.execute("INSERT INTO openings(room_id,kind,w,h) VALUES (2,'window',1.2,1.5)")
-        conn.execute("INSERT INTO settings(key,value) VALUES ('coverage','8')")
-        conn.execute("INSERT INTO settings(key,value) VALUES ('coats','2')")
+        conn.execute("INSERT INTO settings(key,value) VALUES (?,?)",
+            (settings_repo.WALL_COVERAGE_KEY, str(settings_repo.DEFAULT_WALL_COVERAGE)))
+        conn.execute("INSERT INTO settings(key,value) VALUES (?,?)",
+            (settings_repo.WALL_COATS_KEY, str(settings_repo.DEFAULT_WALL_COATS)))
+        conn.execute("INSERT INTO settings(key,value) VALUES (?,?)",
+            (settings_repo.CEILING_COVERAGE_KEY, str(settings_repo.DEFAULT_CEILING_COVERAGE)))
+        conn.execute("INSERT INTO settings(key,value) VALUES (?,?)",
+            (settings_repo.CEILING_COATS_KEY, str(settings_repo.DEFAULT_CEILING_COATS)))
+        # Seed run stays wall-only (ceiling disabled by default), exactly as before.
         est = estimate_room(5, 4, 2.8, [{"w": 0.9, "h": 2.1}, {"w": 1.5, "h": 1.4}], 8, 2)
         conn.execute("INSERT INTO calc_runs(kind,room_id,input_json,result_json,created_at) VALUES ('estimate',1,?,?,datetime('now'))",
             (json.dumps({"room_id": 1}), json.dumps(est)))
         conn.commit()
+    # Backfill ceiling defaults for databases seeded before the ceiling module.
+    conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)",
+        (settings_repo.CEILING_COVERAGE_KEY, str(settings_repo.DEFAULT_CEILING_COVERAGE)))
+    conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)",
+        (settings_repo.CEILING_COATS_KEY, str(settings_repo.DEFAULT_CEILING_COATS)))
+    conn.commit()
     conn.close()
