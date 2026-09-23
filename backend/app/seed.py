@@ -24,4 +24,8 @@ def init_db():
         conn.execute("INSERT INTO calc_runs(kind,room_id,input_json,result_json,created_at) VALUES ('estimate',1,?,?,datetime('now'))",
             (json.dumps({"room_id": 1}), json.dumps(est)))
         conn.commit()
+    # Ceiling defaults: idempotent so pre-existing databases get them too.
+    conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES ('ceiling_coverage','8')")
+    conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES ('ceiling_coats','1')")
+    conn.commit()
     conn.close()

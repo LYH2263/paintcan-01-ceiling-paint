@@ -10,3 +10,8 @@ table { width:100%; border-collapse:collapse; }
 th,td { border:1px solid #aacce0; padding:0.35rem; }
 .hero-num { font-size:2rem; color: var(--line); font-weight:700; }
 a { color: var(--line); }
+.err { color:#b00020; }
+.hint { color:#5a7a8a; font-size:0.85rem; }
+label { display:inline-flex; gap:0.35rem; align-items:center; margin-right:1rem; }
+input { padding:0.25rem 0.4rem; border:1px solid #aacce0; border-radius:3px; }
+hr { border:0; border-top:1px dashed #aacce0; margin:1rem 0; }
